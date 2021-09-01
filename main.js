@@ -8,8 +8,8 @@ const BACKSPACE = "\u2190";
 const ENTER = "\u21B5";
 
 function distance(x1, y1, x2, y2) {
-	var distX = x1 - x2;
-	var distY = y1 - y2;
+	let distX = x1 - x2;
+	let distY = y1 - y2;
 	return Math.sqrt(distX*distX + distY*distY);
 }
 
@@ -75,7 +75,7 @@ Letter.prototype.draw = function() {
 Letter.prototype.radius = 20;
 
 function prepareLetters() {
-	var chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ,.?!_-'".split("");
+	let chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ,.?!_-'".split("");
 	chars.push(BACKSPACE, ENTER);
 	for (let i = 0; i < 71; i++) {
 		let randomIndex = i + Math.floor(Math.random()*(72-i));
@@ -95,18 +95,18 @@ function Stick(x, y) {
 }
 
 Stick.prototype.draw = function() {
-	ctx.fillStyle = "#555555";
+	ctx.fillStyle = "hsl(25,0%,50%,0.6)";
 	ctx.beginPath();
 	ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
 	ctx.fill();
 };
 
 Stick.prototype.moveToClosestPoint = function(x, y) {
-	var closestPoint = {"x": Infinity, "y": Infinity};
-	var leastDistance = Infinity;
+	let closestPoint = {"x": Infinity, "y": Infinity};
+	let leastDistance = Infinity;
 	for (let segment of segments) {
-		var closestInSegment = segment.getClosestPoint(x, y);
-		var dist = distance(x, y, closestInSegment.x, closestInSegment.y);
+		let closestInSegment = segment.getClosestPoint(x, y);
+		let dist = distance(x, y, closestInSegment.x, closestInSegment.y);
 		if (dist < leastDistance) {
 			closestPoint = closestInSegment;
 			leastDistance = dist;
@@ -119,14 +119,14 @@ Stick.prototype.moveToClosestPoint = function(x, y) {
 	this.draw();
 };
 
-Stick.prototype.radius = 25;
+Stick.prototype.radius = 20;
 
 /*
  * Other
  */
 
 function mouseDown(event) {
-	var dist = distance(event.offsetX, event.offsetY, stick.x, stick.y);
+	let dist = distance(event.offsetX, event.offsetY, stick.x, stick.y);
 	if (dist < stick.radius) {
 		isDragging = true;
 		stick.moveToClosestPoint(event.offsetX, event.offsetY);
@@ -135,7 +135,7 @@ function mouseDown(event) {
 
 function mouseMove(event) {
 	if (isDragging) {
-		var dist = distance(event.offsetX, event.offsetY, stick.x, stick.y);
+		let dist = distance(event.offsetX, event.offsetY, stick.x, stick.y);
 		if (dist < stick.radius+5) {
 			stick.moveToClosestPoint(event.offsetX, event.offsetY);
 		}
@@ -145,17 +145,23 @@ function mouseMove(event) {
 function mouseUp(event) {
 	if (isDragging) {
 		isDragging = false;
-		for (let letter of letters) {
-			if (distance(stick.x, stick.y, letter.x, letter.y) < 10) {
-				selectedChar = letter.char;
-				return;
-			}
-		}
-		selectedChar = "";
 	}
+	for (let letter of letters) {
+		if (distance(stick.x, stick.y, letter.x, letter.y) < 10) {
+			selectedChar = letter.char;
+			return;
+		}
+	}
+	selectedChar = "";
 }
+let shuffledLetters = prepareLetters();
 
 function typeSelected() {
+	shuffledLetters = prepareLetters();
+	reassignLetters();
+	drawLetters();
+	backgroundImage = drawBackground();
+	stick.draw();
 	if (selectedChar == "") {
 		return;
 	} else if (selectedChar == BACKSPACE) {
@@ -178,10 +184,14 @@ function drawBackground() {
 	for (let segment of segments) {
 		segment.drawInner();
 	}
+	drawLetters();
+	return ctx.getImageData(0, 0, canvas.width, canvas.height);
+}
+
+function drawLetters() {
 	for (let letter of letters) {
 		letter.draw();
 	}
-	return ctx.getImageData(0, 0, canvas.width, canvas.height);
 }
 
 const info = document.getElementById("info");
@@ -197,17 +207,21 @@ const segments = [
 	new Segment(40, 450, 960, 450),
 	new Segment(500, 90, 500, 450)
 ];
-const shuffledLetters = prepareLetters();
-const letters = [];
-for (let i = 0; i < 72; i++) {
+
+let letters = [];
+function reassignLetters() {
+	letters = []
+	for (let i = 0; i < 72; i++) {
 	let y = Math.floor(i/12);
-	let x = i % 12;
-	let shaft = Math.floor(y/2);
-	let below = y % 2 === 1;
-	letters.push(new Letter(shuffledLetters[i], 80*x + (x < 6 ? 40 : 80), 180*shaft + (below ? 140 : 40), below));
+		let x = i % 12;
+		let shaft = Math.floor(y/2);
+		let below = y % 2 === 1;
+		letters.push(new Letter(shuffledLetters[i], 80*x + (x < 6 ? 40 : 80), 180*shaft + (below ? 140 : 40), below));
+	}
 }
-var writtenChars = [];
-var selectedChar = letters[0].char;
-const backgroundImage = drawBackground();
+reassignLetters();
+let writtenChars = [];
+let selectedChar = letters[0].char;
+let backgroundImage = drawBackground();
 const stick = new Stick(40, 40);
-var isDragging = false;
+let isDragging = false;
