@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<style>
+			button {
+			    padding-left: 0;
+			    padding-right: 0;
+			    margin-left: auto;
+			    margin-right: auto;
+			    margin-top: 20px;
+			    display: block;
+			    width: 65px;
+			    height: 35px;
+			    font-size: 18px;
+			}
+			canvas {
+			    padding-left: 0;
+			    padding-right: 0;
+			    margin-left: auto;
+			    margin-right: auto;
+			    display: block;
+			}
+			p {
+				text-align: center;
+				font-size: 22px;
+			}
+		</style>
+	</head>
+	<body onmousedown="mouseDown(event);" onmouseup="mouseUp(event);" onmousemove="mouseMove(event);">
+		<button onclick="typeSelected();">TYPE</button>
+		<canvas id="canvas" width="1000px" height="530px"></canvas>
+		<p id="input">Type here whatever you want!</p>
+	</body>
+	<script src=main.js></script>
+</html>
